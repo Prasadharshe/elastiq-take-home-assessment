@@ -1,26 +1,36 @@
-# QA Selenium Automation with Python
+import time
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
-## Objective
-Create a Selenium automation script in Python to validate search functionality on the **Selenium Playground** website.
+def setup_driver():
+    driver = webdriver.Chrome(executable_path='/path/to/chromedriver') 
+    driver.maximize_window()
+    return driver
 
-> [!NOTE]
-> **Deliverables:**
-> 1. A Python script (`qa_selenium_test.py`) that:
->    - Navigates to the [Selenium Playground Table Search Demo](https://www.lambdatest.com/selenium-playground/table-sort-search-demo).
->    - Locates and interacts with the search box to search for "New York".
->    - Validates that the search results show **5 entries out of 24 total entries**.
-> 2. A brief **README** explaining the approach and how to run the script.
-> 3. Any additional setup instructions (e.g., local environment, dependencies, drivers etc).
+def test_search_functionality():
+    driver = setup_driver()
 
-> [!TIP]
-> Use Python's `pytest` framework to structure your test cases.
+    try:
+        
+        driver.get("https://www.lambdatest.com/selenium-playground/table-sort-search-demo")
 
-> [!IMPORTANT]
-> - **Environment Setup:** Follow good coding practices and ensure the script is compatible with the latest stable Selenium version.
-> - **Browser Compatibility:** Test with at least one major browser (e.g., Chrome, Firefox).
+        search_box = driver.find_element(By.ID, 'example_filter')
+        search_box.send_keys("New York")
+        search_box.send_keys(Keys.RETURN)
 
-> [!CAUTION]
-> - **Assertions:** Ensure all validations use robust assertion statements.
-> - **Code Quality:** Follow PEP8 standards for Python code.
+        time.sleep(2)
 
-**Good luck!**
+        rows = driver.find_elements(By.CSS_SELECTOR, ".table tbody tr")
+        total_rows = len(rows)
+       
+        visible_rows = [row for row in rows if 'display: none' not in row.get_attribute('style')]
+
+        assert total_rows == 24, f"Expected 24 rows, but got {total_rows}."
+        assert len(visible_rows) == 5, f"Expected 5 visible entries, but found {len(visible_rows)}."
+
+        print("Search functionality test passed successfully!")
+
+    finally:
+        driver.quit()
